@@ -1,0 +1,84 @@
+/* Estilos generales tipo Notion */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+header {
+  background-color: #4b0d0d;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+#progreso {
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+/* Contenedor de la malla */
+#malla {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 16px;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+/* Columna de semestre */
+.semestre {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.semestre h2 {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #4b0d0d;
+}
+
+/* Botón de materia */
+.materia {
+  display: block;
+  background-color: #eee;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 14px;
+  cursor: not-allowed;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Materia desbloqueada */
+.materia.desbloqueada {
+  background-color: #922b2b;
+  color: white;
+  cursor: pointer;
+}
+
+/* Materia aprobada */
+.materia.aprobada {
+  background-color: #266325;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Al pasar el cursor por materias desbloqueadas */
+.materia.desbloqueada:hover {
+  background-color: #7a2222;
+  transform: scale(1.03);
+}
