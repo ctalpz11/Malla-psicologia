@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Estadísticas de tu malla</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #4b0d0d;
+    }
+    canvas {
+      max-width: 600px;
+      margin: 40px auto;
+      display: block;
+    }
+    #resumen {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Estadísticas de tu avance</h1>
+  <p id="resumen">Cargando...</p>
+  <canvas id="graficoBarras"></canvas>
+  <canvas id="graficoPie"></canvas>
+
+  <script>
+    const materias = [
+      { id: "idioma", nombre: "Competencias idiomáticas básicas" },
+      { id: "investigacion", nombre: "Introducción a la investigación" },
+      { id: "atencion", nombre: "Percepción y atención" },
+      { id: "memoria", nombre: "Memoria y aprendizaje" },
+      { id: "historia", nombre: "Historia y fundamentos de la psicología" },
+      { id: "electiva1", nombre: "Electiva I" },
+      { id: "ingles2", nombre: "Inglés II" },
+      { id: "digital", nombre: "Transformación Digital y Ciudadanía" },
+      { id: "lenguaje", nombre: "Pensamiento y lenguaje" },
+      { id: "cuantitativa", nombre: "Investigación cuantitativa" },
+      { id: "cognicion", nombre: "Funciones ejecutivas y cognición social" },
+      { id: "aprendizaje", nombre: "Modelos de aprendizaje" },
+      { id: "core1", nombre: "Core I" },
+      { id: "ingles3", nombre: "Inglés III" }
+      // Agrega más si lo necesitas
+    ];
+
+    const categorias = {
+      "inglés": "Inglés",
+      "idiomátic": "Inglés",
+      "investigación": "Investigación",
+      "método": "Investigación",
+      "medición": "Investigación",
+      "micropráctica": "Clínica",
+      "práctica": "Clínica",
+      "campo profesional": "Clínica",
+      "social": "Social",
+      "política": "Social",
+      "ciudadanía": "Social",
+      "organiza": "Social",
+      "desarrollo": "Ciclo vital",
+      "atención": "Neuropsicología",
+      "memoria": "Neuropsicología",
+      "funciones ejecutivas": "Neuropsicología",
+      "ética": "Ética",
+      "electiva": "Electiva",
+      "core": "Core",
+      "digital": "Tecnología",
+      "psicopatología": "Clínica",
+      "clínica": "Clínica",
+      "salud": "Clínica",
+      "proyecto": "Proyecto integrador",
+      "énfasis": "Énfasis",
+      "historia": "Fundamentos",
+      "fundamento": "Fundamentos"
+    };
+
+    const materiasAprobadas = JSON.parse(localStorage.getItem("materiasAprobadas")) || [];
+    const conteo = {};
+
+    materias.forEach(m => {
+      if (materiasAprobadas.includes(m.id)) {
+        let cat = "Otra";
+        for (let clave in categorias) {
+          if (m.nombre.toLowerCase().includes(clave)) {
+            cat = categorias[clave];
+            break;
+          }
+        }
+        conteo[cat] = (conteo[cat] || 0) + 1;
+      }
+    });
+
+    const labels = Object.keys(conteo);
+    const data = Object.values(conteo);
+    const mayor = labels.reduce((a, b) => conteo[a] > conteo[b] ? a : b, labels[0]);
+
+    document.getElementById("resumen").textContent =
+      `Has cursado más materias en la categoría: "${mayor}".`;
+
+    new Chart(document.getElementById("graficoBarras"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Materias aprobadas por categoría",
+          data,
+          backgroundColor: "#922b2b"
+        }]
+      }
+    });
+
+    new Chart(document.getElementById("graficoPie"), {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: ["#922b2b", "#cc6666", "#f0a0a0", "#4b0d0d", "#660000", "#999"]
+        }]
+      }
+    });
+  </script>
+</body>
+</html>
