@@ -21,18 +21,27 @@
       margin: 40px auto;
       display: block;
     }
+    h2 {
+      text-align: center;
+      color: #922b2b;
+      margin-top: 40px;
+    }
     #resumen {
       text-align: center;
-      margin-top: 20px;
       font-size: 18px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Estadísticas de tu avance</h1>
+  <h1>📊 Estadísticas de tu avance</h1>
   <p id="resumen">Cargando...</p>
-  <canvas id="graficoBarras"></canvas>
-  <canvas id="graficoPie"></canvas>
+
+  <h2>📚 Materias en general por categoría</h2>
+  <canvas id="graficoGeneral"></canvas>
+
+  <h2>✅ Materias cursadas por categoría</h2>
+  <canvas id="graficoAprobadas"></canvas>
 
   <script>
     const materias = [
@@ -50,84 +59,101 @@
       { id: "aprendizaje", nombre: "Modelos de aprendizaje" },
       { id: "core1", nombre: "Core I" },
       { id: "ingles3", nombre: "Inglés III" }
-      // Agrega más si lo necesitas
+      // Puedes seguir agregando más si es necesario
     ];
 
     const categorias = {
-      "inglés": "Inglés",
-      "idiomátic": "Inglés",
       "investigación": "Investigación",
       "método": "Investigación",
       "medición": "Investigación",
-      "micropráctica": "Clínica",
-      "práctica": "Clínica",
-      "campo profesional": "Clínica",
+      "micropráctica": "práctica",
+      "práctica": "práctica",
+      "campo profesional": "práctica",
       "social": "Social",
       "política": "Social",
-      "ciudadanía": "Social",
-      "organiza": "Social",
+      "ciudadanía": "universidad",
+      "organiza": "organizaciónal",
       "desarrollo": "Ciclo vital",
       "atención": "Neuropsicología",
       "memoria": "Neuropsicología",
       "funciones ejecutivas": "Neuropsicología",
-      "ética": "Ética",
+      "ética": "profesional",
       "electiva": "Electiva",
-      "core": "Core",
-      "digital": "Tecnología",
+      "core": "universidad",
+      "digital": "universidad",
       "psicopatología": "Clínica",
       "clínica": "Clínica",
       "salud": "Clínica",
-      "proyecto": "Proyecto integrador",
+      "proyecto": "práctica",
       "énfasis": "Énfasis",
       "historia": "Fundamentos",
       "fundamento": "Fundamentos"
     };
 
     const materiasAprobadas = JSON.parse(localStorage.getItem("materiasAprobadas")) || [];
-    const conteo = {};
 
-    materias.forEach(m => {
-      if (materiasAprobadas.includes(m.id)) {
-        let cat = "Otra";
-        for (let clave in categorias) {
-          if (m.nombre.toLowerCase().includes(clave)) {
-            cat = categorias[clave];
-            break;
+    const contarPorCategoria = (soloAprobadas = false) => {
+      const conteo = {};
+      materias.forEach(m => {
+        if (!soloAprobadas || materiasAprobadas.includes(m.id)) {
+          let cat = "Otra";
+          for (let clave in categorias) {
+            if (m.nombre.toLowerCase().includes(clave)) {
+              cat = categorias[clave];
+              break;
+            }
+          }
+          if (cat === "Inglés") return; // eliminar inglés
+          conteo[cat] = (conteo[cat] || 0) + 1;
+        }
+      });
+      return conteo;
+    };
+
+    const renderBarChart = (ctx, datos, titulo) => {
+      const labels = Object.keys(datos);
+      const valores = Object.values(datos);
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: titulo,
+            data: valores,
+            backgroundColor: "#922b2b"
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          },
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
           }
         }
-        conteo[cat] = (conteo[cat] || 0) + 1;
-      }
-    });
+      });
+    };
 
-    const labels = Object.keys(conteo);
-    const data = Object.values(conteo);
-    const mayor = labels.reduce((a, b) => conteo[a] > conteo[b] ? a : b, labels[0]);
+    const generales = contarPorCategoria(false);
+    const aprobadas = contarPorCategoria(true);
+
+    const mayor = Object.entries(aprobadas).reduce(
+      (a, b) => (b[1] > (a[1] || 0) ? b : a),
+      ["Ninguna", 0]
+    );
 
     document.getElementById("resumen").textContent =
-      `Has cursado más materias en la categoría: "${mayor}".`;
+      `✔️ Has cursado más materias en la categoría: "${mayor[0]}" (${mayor[1]} materias).`;
 
-    new Chart(document.getElementById("graficoBarras"), {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [{
-          label: "Materias aprobadas por categoría",
-          data,
-          backgroundColor: "#922b2b"
-        }]
-      }
-    });
-
-    new Chart(document.getElementById("graficoPie"), {
-      type: "pie",
-      data: {
-        labels,
-        datasets: [{
-          data,
-          backgroundColor: ["#922b2b", "#cc6666", "#f0a0a0", "#4b0d0d", "#660000", "#999"]
-        }]
-      }
-    });
+    renderBarChart(document.getElementById("graficoGeneral"), generales, "Total por categoría");
+    renderBarChart(document.getElementById("graficoAprobadas"), aprobadas, "Aprobadas por categoría");
   </script>
 </body>
 </html>
