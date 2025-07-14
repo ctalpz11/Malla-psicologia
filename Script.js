@@ -1,66 +1,80 @@
 const materias = [
-  {
-    nombre: "Competencias idiomáticas básicas (2cr)",
-    semestre: 1,
-    creditos: 2,
-    id: "idioma1"
-  },
-  {
-    nombre: "Transformación Digital y Ciudadanía (3cr)",
-    semestre: 2,
-    creditos: 3,
-    prerequisitos: ["idioma1"]
-  },
-  // ... añade aquí todas las materias siguiendo este patrón ...
+  // Semestre 1
+  { id: "idioma1", nombre: "Competencias idiomáticas básicas (2cr)", semestre: 1, creditos: 2 },
+  { id: "inv1", nombre: "Introducción a la investigación (3cr)", semestre: 1, creditos: 3 },
+  { id: "pam", nombre: "Percepción y atención (3cr)", semestre: 1, creditos: 3 },
+  { id: "memoria", nombre: "Memoria y aprendizaje (3cr)", semestre: 1, creditos: 3 },
+  { id: "historia", nombre: "Historia y fundamentos (3cr)", semestre: 1, creditos: 3 },
+  { id: "electiva1", nombre: "Electiva I (1cr)", semestre: 1, creditos: 1 },
+  { id: "ingles2", nombre: "Inglés II (3cr)", semestre: 1, creditos: 3 },
+
+  // Semestre 2
+  { id: "tdc", nombre: "Transformación Digital (3cr)", semestre: 2, creditos: 3, prerequisitos: ["idioma1"] },
+  { id: "lenguaje", nombre: "Pensamiento y lenguaje (3cr)", semestre: 2, creditos: 3 },
+  { id: "invcuant", nombre: "Investigación cuantitativa (2cr)", semestre: 2, creditos: 2, prerequisitos: ["inv1"] },
+  { id: "funciones", nombre: "Funciones ejecutivas y cognición (3cr)", semestre: 2, creditos: 3, prerequisitos: ["pam"] },
+  { id: "modeloapr", nombre: "Modelos de aprendizaje (2cr)", semestre: 2, creditos: 2 },
+  { id: "core1", nombre: "Core I (2cr)", semestre: 2, creditos: 2 },
+  { id: "ingles3", nombre: "Inglés III (3cr)", semestre: 2, creditos: 3, prerequisitos: ["ingles2"] },
+
+  // Semestre 3
+  { id: "problemas", nombre: "Problemas sociales contemporáneos (2cr)", semestre: 3, creditos: 2 },
+  { id: "desarrollo", nombre: "Psicología del desarrollo (3cr)", semestre: 3, creditos: 3 },
+  { id: "micro1", nombre: "Micropráctica I (3cr)", semestre: 3, creditos: 3 },
+  { id: "metcuant", nombre: "Métodos cuantitativos (2cr)", semestre: 3, creditos: 2, prerequisitos: ["invcuant"] },
+  { id: "electiva2", nombre: "Electiva II (3cr)", semestre: 3, creditos: 3 },
+  { id: "core2", nombre: "Core II (2cr)", semestre: 3, creditos: 2 },
+  { id: "ingles4", nombre: "Inglés IV (3cr)", semestre: 3, creditos: 3, prerequisitos: ["ingles3"] }
 ];
 
-const malla = document.getElementById("malla");
-const progreso = document.getElementById("progreso");
-
+// CREAR MALLA
 function crearMalla() {
+  const malla = document.getElementById("malla");
   for (let i = 1; i <= 8; i++) {
     const columna = document.createElement("div");
-    columna.classList.add("semestre");
-    columna.innerHTML = `<h2>Semestre ${i}</h2>`;
+    columna.className = "semestre";
+    const titulo = document.createElement("h2");
+    titulo.textContent = `Semestre ${i}`;
+    columna.appendChild(titulo);
 
     materias
       .filter(m => m.semestre === i)
       .forEach(m => {
-        const boton = document.createElement("div");
-        boton.textContent = m.nombre;
-        boton.classList.add("materia");
-        boton.dataset.id = m.id;
-        columna.appendChild(boton);
+        const div = document.createElement("div");
+        div.textContent = m.nombre;
+        div.className = "materia";
+        div.dataset.id = m.id;
+        columna.appendChild(div);
       });
 
     malla.appendChild(columna);
   }
 }
 
+// ACTUALIZAR ESTADO
 function actualizarEstado() {
-  const botones = document.querySelectorAll(".materia");
-  const aprobadas = JSON.parse(localStorage.getItem("materiasAprobadas")) || [];
-
-  botones.forEach(boton => {
-    const id = boton.dataset.id;
+  const aprobadas = JSON.parse(localStorage.getItem("materiasAprobadas") || "[]");
+  document.querySelectorAll(".materia").forEach(btn => {
+    const id = btn.dataset.id;
     const materia = materias.find(m => m.id === id);
     const requisitos = materia.prerequisitos || [];
 
-    boton.classList.remove("aprobado", "bloqueado", "desbloqueado");
+    btn.classList.remove("aprobado", "bloqueado", "desbloqueado");
 
     if (aprobadas.includes(id)) {
-      boton.classList.add("aprobado");
+      btn.classList.add("aprobado");
     } else if (requisitos.every(r => aprobadas.includes(r))) {
-      boton.classList.add("desbloqueado");
+      btn.classList.add("desbloqueado");
     } else {
-      boton.classList.add("bloqueado");
+      btn.classList.add("bloqueado");
     }
 
-    boton.onclick = () => {
-      if (boton.classList.contains("bloqueado")) return;
+    btn.onclick = () => {
+      if (btn.classList.contains("bloqueado")) return;
 
-      if (boton.classList.contains("aprobado")) {
-        aprobadas.splice(aprobadas.indexOf(id), 1);
+      const idx = aprobadas.indexOf(id);
+      if (idx >= 0) {
+        aprobadas.splice(idx, 1);
       } else {
         aprobadas.push(id);
       }
@@ -72,17 +86,19 @@ function actualizarEstado() {
   });
 }
 
+// PROGRESO
 function actualizarProgreso() {
-  const aprobadas = JSON.parse(localStorage.getItem("materiasAprobadas")) || [];
-  const total = materias.reduce((acc, m) => acc + m.creditos, 0);
-  const hecho = materias
+  const aprobadas = JSON.parse(localStorage.getItem("materiasAprobadas") || "[]");
+  const total = materias.reduce((sum, m) => sum + m.creditos, 0);
+  const hechos = materias
     .filter(m => aprobadas.includes(m.id))
-    .reduce((acc, m) => acc + m.creditos, 0);
-  const porcentaje = ((hecho / total) * 100).toFixed(1);
+    .reduce((sum, m) => sum + m.creditos, 0);
+  const porcentaje = ((hechos / total) * 100).toFixed(1);
 
-  progreso.textContent = `Créditos completados: ${hecho} / ${total} (${porcentaje}%)`;
+  document.getElementById("progreso").textContent = `Créditos completados: ${hechos} / ${total} (${porcentaje}%)`;
 }
 
+// INICIALIZAR
 crearMalla();
 actualizarEstado();
 actualizarProgreso();
