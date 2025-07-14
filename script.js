@@ -45,7 +45,7 @@ const malla = {
     { id: "core4", nombre: "Core IV", creditos: 2, prerrequisitos: ["core3"] },
     { id: "ingles6", nombre: "Inglés VI", creditos: 3, prerrequisitos: ["ingles5"] }
   ],  
-  6: [
+    6: [
     { id: "organizacional", nombre: "Psicología organizacional", creditos: 3, prerrequisitos: [] },
     { id: "educativa", nombre: "Psicología educativa", creditos: 3, prerrequisitos: [] },
     { id: "electiva5", nombre: "Electivas V", creditos: 3, prerrequisitos: [] },
