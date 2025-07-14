@@ -1,4 +1,4 @@
-// === MALLA CURRICULAR ===
+// === MALLA CURRICULAR COMPLETA ===
 const malla = {
   1: [
     { id: "idioma_basico", nombre: "Competencias idiomáticas básicas", creditos: 2, prerrequisitos: [] },
@@ -26,68 +26,91 @@ const malla = {
     { id: "electiva2", nombre: "Electivas II", creditos: 3, prerrequisitos: [] },
     { id: "core2", nombre: "Core II", creditos: 2, prerrequisitos: ["core1"] },
     { id: "ingles4", nombre: "Inglés IV", creditos: 3, prerrequisitos: ["ingles3"] }
+  ],
+  4: [
+    { id: "etica", nombre: "Ética profesional", creditos: 2, prerrequisitos: [] },
+    { id: "invest_cualitativa", nombre: "Investigación cualitativa", creditos: 2, prerrequisitos: ["metodos_cuant"] },
+    { id: "psicopatologia", nombre: "Psicopatología", creditos: 3, prerrequisitos: ["funciones_ejecutivas"] },
+    { id: "medicion_eval", nombre: "Medición y evaluación del comportamiento", creditos: 3, prerrequisitos: [] },
+    { id: "electiva3", nombre: "Electivas III", creditos: 3, prerrequisitos: [] },
+    { id: "core3", nombre: "Core III", creditos: 2, prerrequisitos: ["core2"] },
+    { id: "ingles5", nombre: "Inglés V", creditos: 3, prerrequisitos: ["ingles4"] }
+  ],
+  5: [
+    { id: "psicologia_social", nombre: "Psicología social", creditos: 3, prerrequisitos: [] },
+    { id: "metodos_cualitativos", nombre: "Métodos y análisis cualitativos", creditos: 2, prerrequisitos: ["invest_cualitativa"] },
+    { id: "clinica", nombre: "Psicología clínica", creditos: 2, prerrequisitos: ["psicopatologia"] },
+    { id: "micro2", nombre: "Micropráctica II", creditos: 3, prerrequisitos: ["micro1"] },
+    { id: "electiva4", nombre: "Electivas IV", creditos: 3, prerrequisitos: [] },
+    { id: "core4", nombre: "Core IV", creditos: 2, prerrequisitos: ["core3"] },
+    { id: "ingles6", nombre: "Inglés VI", creditos: 3, prerrequisitos: ["ingles5"] }
+  ],  
+  6: [
+    { id: "organizacional", nombre: "Psicología organizacional", creditos: 3, prerrequisitos: [] },
+    { id: "educativa", nombre: "Psicología educativa", creditos: 3, prerrequisitos: [] },
+    { id: "electiva5", nombre: "Electivas V", creditos: 3, prerrequisitos: [] },
+    { id: "micro3", nombre: "Micropráctica III", creditos: 3, prerrequisitos: ["micro2"] },
+    { id: "core5", nombre: "Core V", creditos: 3, prerrequisitos: ["core4"] },
+    { id: "ingles7", nombre: "Inglés VII", creditos: 3, prerrequisitos: ["ingles6"] }
+  ],
+  7: [
+    { id: "competencias", nombre: "Competencias profesionales", creditos: 1, prerrequisitos: [] },
+    { id: "politica", nombre: "Psicología, política y ciudadanía", creditos: 2, prerrequisitos: [] },
+    { id: "campo1", nombre: "Campo profesional I", creditos: 3, prerrequisitos: ["psicologia_social"] },
+    { id: "campo2", nombre: "Campo profesional II", creditos: 3, prerrequisitos: ["organizacional"] },
+    { id: "clinica_salud", nombre: "Práctica formativa en clínica y salud", creditos: 4, prerrequisitos: ["clinica"] },
+    { id: "electiva6", nombre: "Electivas VI", creditos: 3, prerrequisitos: [] },
+    { id: "proyecto1", nombre: "Proyecto en psicología I", creditos: 2, prerrequisitos: [] }
+  ],
+  8: [
+    { id: "practica", nombre: "Prácticas en psicología", creditos: 16, prerrequisitos: ["campo1", "campo2", "clinica_salud", "proyecto1"] }
   ]
-  // Agrega los demás semestres igual que estos 3 para completarlo.
 };
 
-// === CARGA Y RENDER ===
-const contenedor = document.getElementById("contenedor");
-const progreso = document.getElementById("progreso");
-let aprobadas = JSON.parse(localStorage.getItem("aprobadas")) || [];
+const cursosAprobados = new Set(JSON.parse(localStorage.getItem("cursosAprobados") || "[]"));
 
-function crearBoton(materia) {
-  const btn = document.createElement("button");
-  btn.className = "materia";
-  btn.textContent = `${materia.nombre} (${materia.creditos}cr)`;
-  btn.dataset.id = materia.id;
+function actualizarVista() {
+  const contenedor = document.getElementById("malla");
+  contenedor.innerHTML = "";
+  let total = 0, completados = 0;
 
-  const cumplePrerequisitos = materia.prerrequisitos.every(pr => aprobadas.includes(pr));
+  for (let s = 1; s <= 8; s++) {
+    const col = document.createElement("div");
+    col.className = "columna";
+    const h = document.createElement("h3");
+    h.textContent = `Semestre ${s}`;
+    col.appendChild(h);
 
-  if (aprobadas.includes(materia.id)) {
-    btn.classList.add("aprobada");
-  } else if (cumplePrerequisitos) {
-    btn.classList.add("desbloqueada");
-  } else {
-    btn.classList.add("bloqueada");
-    btn.disabled = true;
+    for (const curso of malla[s]) {
+      const btn = document.createElement("button");
+      btn.textContent = `${curso.nombre} (${curso.creditos}cr)`;
+      total += curso.creditos;
+
+      const tienePrereqs = curso.prerrequisitos.every(p => cursosAprobados.has(p));
+      const aprobado = cursosAprobados.has(curso.id);
+
+      btn.className = aprobado ? "aprobado" : tienePrereqs ? "desbloqueado" : "bloqueado";
+      btn.disabled = !tienePrereqs && !aprobado;
+
+      btn.onclick = () => {
+        if (cursosAprobados.has(curso.id)) {
+          cursosAprobados.delete(curso.id);
+        } else {
+          cursosAprobados.add(curso.id);
+        }
+        localStorage.setItem("cursosAprobados", JSON.stringify([...cursosAprobados]));
+        actualizarVista();
+      };
+
+      if (aprobado) completados += curso.creditos;
+      col.appendChild(btn);
+    }
+
+    contenedor.appendChild(col);
   }
 
-  btn.onclick = () => {
-    if (aprobadas.includes(materia.id)) {
-      aprobadas = aprobadas.filter(id => id !== materia.id);
-    } else {
-      aprobadas.push(materia.id);
-    }
-    localStorage.setItem("aprobadas", JSON.stringify(aprobadas));
-    renderMalla();
-  };
-
-  return btn;
+  const progreso = document.getElementById("progreso");
+  progreso.textContent = `Créditos completados: ${completados} / ${total} (${Math.round((completados / total) * 100)}%)`;
 }
 
-function renderMalla() {
-  contenedor.innerHTML = "";
-  let total = 0;
-  let completados = 0;
-
-  Object.entries(malla).forEach(([semestre, materias]) => {
-    const columna = document.createElement("div");
-    columna.className = "semestre";
-    const titulo = document.createElement("h3");
-    titulo.textContent = `Semestre ${semestre}`;
-    columna.appendChild(titulo);
-
-    materias.forEach(materia => {
-      total += materia.creditos;
-      if (aprobadas.includes(materia.id)) completados += materia.creditos;
-      columna.appendChild(crearBoton(materia));
-    });
-
-    contenedor.appendChild(columna);
-  });
-
-  const porcentaje = ((completados / total) * 100).toFixed(1);
-  progreso.textContent = `Créditos completados: ${completados} / ${total} (${porcentaje}%)`;
-}
-
-renderMalla();
+document.addEventListener("DOMContentLoaded", actualizarVista);
