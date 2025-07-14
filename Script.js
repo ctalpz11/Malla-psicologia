@@ -84,15 +84,21 @@ function crearBoton(materia) {
   }
 
   boton.addEventListener("click", () => {
-    if (boton.classList.contains("desbloqueada") && !aprobadas.has(materia.id)) {
-      boton.classList.remove("desbloqueada");
+  if (boton.classList.contains("desbloqueada")) {
+    if (boton.classList.contains("aprobada")) {
+      boton.classList.remove("aprobada");
+      aprobadas.delete(materia.id);
+      creditos -= materia.creditos;
+    } else {
       boton.classList.add("aprobada");
       aprobadas.add(materia.id);
       creditos += materia.creditos;
-      actualizarProgreso();
-      desbloquearMaterias();
     }
-  });
+
+    actualizarProgreso();
+    desbloquearMaterias();
+  }
+});
 
   return boton;
 }
